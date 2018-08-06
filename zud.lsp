@@ -1,11 +1,10 @@
-(defun c:zud(/ NR FILE_NAME MARK FILE FONT_SIZE LINE old_cmdecho)
+(defun c:zud(/ NR FILE_NAME FILE FONT_SIZE LINE old_cmdecho)
 	(setq old_cmdecho (getvar "CMDECHO"))
 	(setvar "CMDECHO" 0)	
 	(initget (+ 8 8 4 4))
 		(setq NR (getint "Podaj numer pierwszego punktu <1>: "))
 		(setq FONT_SIZE (getreal "Podaj rozmiar tekstu <10>:"))
 		(setq LINE (getstring "Podaj oznaczenie lacza <t>:"))
-		(setq MARK (getstring "Czy pytac o linie pomocnicze do punktu <N> [T/N]:"))
 	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
 	(if (= NR nil) (setq NR 1))
 	(if (= FONT_SIZE nil) (setq FONT_SIZE 10))
@@ -21,38 +20,43 @@
 			(if (< NR 10) 
 			(strcat (rtos NR)".  " COORD_Y ",  " COORD_X " 	" LINE )
 			(strcat (rtos NR) ". " COORD_Y ",  " COORD_X " 	" LINE )
-			);if 
+			)
 		)
 		(write-line COORDS FILE)
-		(if (or (= MARK "t")(= MARK "T") )
-			(progn
-			(setq GUIDE "n")
-			(setq GUIDE (getstring "Czy do tego punktu dorysowac linie <N> [T/N]:"))
-			(if (or (= GUIDE "t")(= GUIDE "T") )
-				(DRAW_GUIDE)
-				(DRAW_TEXT) );if
-			)
-			(DRAW_TEXT)	
-		);if
+		(DRAW_GUIDE)
 		(setq NR (1+ NR))
 		(setq I (1+ I))
-	);while
+	)
 	(close FILE)
 	(setvar "CMDECHO" old_cmdecho)
 (EXIT)
-
-);defun
+)
 
 (defun DRAW_TEXT (/ mark_text)
 	(setq mark_text (strcat (rtos NR) LINE))
 	(command "_layer" "_m" "zud-nr" "_c" "7" "" "")
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
-);defun
+)
 
 (defun EXIT (/)
 (princ (strcat "\nKoniec, wskazano punktow: " (rtos I)) )
 (princ)
-);defun
+)
+
+(defun DRAW_GUIDE (/ d p1 p2 p3)
+	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
+	(command "_osmode" "0" "")
+	(setq d  (* 3 FONT_SIZE))
+	(setq p1 MARK_POINT)
+	(setq p2 (getpoint p1 "Wskaz koniec linii pomocniczej:"))
+	(setq p3 (polar p2 0 d))
+	(command "_line" p1 p2 "")
+	(command "_line" p2 p3 "")
+	(setq MARK_POINT (list (-(car p3)(/ d 1.1)) (cadr p3)  ))
+	(DRAW_TEXT)
+)
+
+(princ (strcat "\nPolecenie: ZUD") ) 
 
 ;(defun DRAW_POINT (/)d ang_90 ang_270 p1 p2 p3 p4)
 ;	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
@@ -66,20 +70,4 @@
 ;	(command "_osmode" "0" "")
 ;	(command "_line" p1 p2 "")
 ;	(command "_line" p3 p4 "")
-;);defun
-;;; ---------------------------------------------------------------------------------- ;;;
-(defun DRAW_GUIDE (/ d p1 p2 p3)
-	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
-	(command "_osmode" "0" "")
-	(setq d  (* 3 FONT_SIZE))
-	(setq p1 MARK_POINT)
-	(setq p2 (getpoint "Wskaz koniec linii pomocniczej:"))
-	(setq p3 (polar p2 0 d))	
-	(command "_line" p1 p2 "")
-	(command "_line" p2 p3 "")
-	(princ (strcat "oznaczam w guide") )
-	(setq MARK_POINT p3) 
-	(DRAW_TEXT)
-);defun
-(princ (strcat "\nPolecenie: ZUD") ) 
-;;; ---------------------------------------------------------------------------------- ;;;
+;)
