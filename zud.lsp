@@ -29,9 +29,8 @@
 			(setq GUIDE "n")
 			(setq GUIDE (getstring "Czy do tego punktu dorysowac linie <N> [T/N]:"))
 			(if (or (= GUIDE "t")(= GUIDE "T") )
-				(DRAW_GUIDE) 
-			)
-			(DRAW_TEXT)
+				(DRAW_GUIDE)
+				(DRAW_TEXT) );if
 			)
 			(DRAW_TEXT)	
 		);if
@@ -69,11 +68,18 @@
 ;	(command "_line" p3 p4 "")
 ;);defun
 ;;; ---------------------------------------------------------------------------------- ;;;
-(defun DRAW_GUIDE (/ d ang_90 ang_270 p1 p2 p3 p4)
-;	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
-;	(command "_osmode" "0" "")
-(princ (strcat "rysuje linie") )
-;	(command "_line" p1 p2 "")
+(defun DRAW_GUIDE (/ d p1 p2 p3)
+	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
+	(command "_osmode" "0" "")
+	(setq d  (* 3 FONT_SIZE))
+	(setq p1 MARK_POINT)
+	(setq p2 (getpoint "Wskaz koniec linii pomocniczej:"))
+	(setq p3 (polar p2 0 d))	
+	(command "_line" p1 p2 "")
+	(command "_line" p2 p3 "")
+	(princ (strcat "oznaczam w guide") )
+	(setq MARK_POINT p3) 
+	(DRAW_TEXT)
 );defun
 (princ (strcat "\nPolecenie: ZUD") ) 
 ;;; ---------------------------------------------------------------------------------- ;;;
