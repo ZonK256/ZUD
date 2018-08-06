@@ -24,36 +24,37 @@
 			);if 
 		)
 		(write-line COORDS FILE)
-;		(if (or (= MARK "t")(= MARK "T") )
-;			(progn
-;			(setq GUIDE "n")
-;			(setq GUIDE (getstring "Czy do tego punktu dorysowac linie <N> [T/N]:"))
-;			(when (or (= GUIDE "t")(= GUIDE "T") )
-;				(DRAW_POINT) 
-;			)
-;			(DRAW_TEXT)
-;			)
-;			(DRAW_TEXT)	
-;		);if
+		(if (or (= MARK "t")(= MARK "T") )
+			(progn
+			(setq GUIDE "n")
+			(setq GUIDE (getstring "Czy do tego punktu dorysowac linie <N> [T/N]:"))
+			(if (or (= GUIDE "t")(= GUIDE "T") )
+				(DRAW_GUIDE) 
+			)
+			(DRAW_TEXT)
+			)
+			(DRAW_TEXT)	
+		);if
 		(setq NR (1+ NR))
 		(setq I (1+ I))
 	);while
 	(close FILE)
 	(setvar "CMDECHO" old_cmdecho)
 (EXIT)
-	
+
 );defun
-;;; ---------------------------------------------------------------------------------- ;;;
+
 (defun DRAW_TEXT (/ mark_text)
 	(setq mark_text (strcat (rtos NR) LINE))
 	(command "_layer" "_m" "zud-nr" "_c" "7" "" "")
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
- );defun
-;;; ---------------------------------------------------------------------------------- ;;;
+);defun
+
 (defun EXIT (/)
 (princ (strcat "\nKoniec, wskazano punktow: " (rtos I)) )
 (princ)
 );defun
+
 ;(defun DRAW_POINT (/)d ang_90 ang_270 p1 p2 p3 p4)
 ;	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
 ;	(setq d (/ FONT_SIZE 3))
@@ -66,20 +67,13 @@
 ;	(command "_osmode" "0" "")
 ;	(command "_line" p1 p2 "")
 ;	(command "_line" p3 p4 "")
- );defun
+;);defun
 ;;; ---------------------------------------------------------------------------------- ;;;
-(defun DRAW_GUIDE (/)
-	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
-(setq d (/ FONT_SIZE 3))
-(setq ang_90 (/ pi 2))
-(setq ang_270 (* 3 ang_90))
-(setq p1 (polar MARK_POINT ang_90 d))
-(setq p2 (polar MARK_POINT ang_270 d))
-(setq p3 (polar MARK_POINT 0 d))
-(setq p4 (polar MARK_POINT pi d))
-(command "_osmode" "0" "")
-(command "_line" p1 p2 "")
-(command "_line" p3 p4 "")
- );defun
-(princ (strcat "\nPolecenie: ZUD") )
+(defun DRAW_GUIDE (/ d ang_90 ang_270 p1 p2 p3 p4)
+;	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
+;	(command "_osmode" "0" "")
+(princ (strcat "rysuje linie") )
+;	(command "_line" p1 p2 "")
+);defun
+(princ (strcat "\nPolecenie: ZUD") ) 
 ;;; ---------------------------------------------------------------------------------- ;;;
