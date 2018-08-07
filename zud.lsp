@@ -1,7 +1,7 @@
 (defun c:zud(/ NR FILE_NAME FILE FONT_SIZE LINE old_cmdecho)
 	(setq old_cmdecho (getvar "CMDECHO"))
 	(setvar "CMDECHO" 0)	
-	(setq NR 1 FONT_SIZE 2 LINE "t")
+	(setq NR 1 FONT_SIZE 1.5 LINE "t")
 	(princ (strcat "Domyslne wartosci dla: pierwszego punktu <" (rtos NR)  ">, rozmiaru tekstu <" (rtos FONT_SIZE) "> i oznaczenia lacza <" LINE ">. "))
 	(setq DEFAULT (getstring "Zachowac domyslne wartosci? <T> [T/N]"))
 		(if (or (= DEFAULT "N") (= DEFAULT "n")) 
@@ -20,7 +20,7 @@
 	(setq I 0)
 	(write-line (strcat "Nr  Y 		X" ) FILE)
 	(while
-		(setq MARK_POINT (getpoint (strcat "Wskaz punkt " (rtos NR)) ))
+		(setq MARK_POINT (getpoint (strcat "Wskaz punkt " (rtos NR 2 0)) ))
 		(setq COORD_Y (RTOS (cadr MARK_POINT) 2 2))
 		(setq COORD_X (RTOS (car MARK_POINT) 2 2))
 		(setq COORDS
@@ -39,16 +39,12 @@
 (EXIT)
 )
 
-(defun DRAW_TEXT (/ mark_text p1 p2)
-	(setq mark_text (strcat (rtos NR) LINE))
+(defun DRAW_TEXT (/ mark_text p)
+	(setq mark_text (strcat (rtos NR 2 0) LINE))
 	(command "_layer" "_m" "zud-nr" "_c" "7" "" "")
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
-	(setq a (* FONT_SIZE 2))
-	(setq p1 (list (+ (car MARK_POINT) a) (+ (cadr MARK_POINT) a)) )
-	(princ p1)
-	(setq p2 (list (- (car MARK_POINT) a) (- (cadr MARK_POINT) a)) )
-	(princ p2)
-	(command "_textmask" p1 p2 "")
+	(setq p MARK_POINT)
+	(command "_textmask" p "")
 )	
 
 (defun EXIT ()
@@ -58,13 +54,13 @@
 
 (defun DRAW_GUIDE (/ d p1 p2 p3)
 	(command "_layer" "_m" "zud-linie" "_c" "7" "" "")
-	(setq d  (* 3 FONT_SIZE))
+	(setq d  (* 2 FONT_SIZE))
 	(setq p1 MARK_POINT)
 	(setq p2 (getpoint p1 "Wskaz koniec linii pomocniczej:"))
 	(if (> (car p1) (car p2) )
 		(progn
 				(setq p3 (polar p2 pi d))
-				(setq MARK_POINT (list (+ (car p3)(/ d 5	)) (cadr p3)  ))
+				(setq MARK_POINT (list (+ (car p3)(/ d 5)) (cadr p3)  ))
 		)
 		(progn
 				(setq p3 (polar p2 0 d))
