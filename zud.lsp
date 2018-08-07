@@ -14,6 +14,7 @@
 	(write-line (strcat "Nr  Y 		X" ) FILE)
 	(while
 		(setq MARK_POINT (getpoint (strcat "Wskaz punkt " (rtos NR)) ))
+		(princ MARK_POINT)
 		(setq COORD_Y (RTOS (cadr MARK_POINT) 2 2))
 		(setq COORD_X (RTOS (car MARK_POINT) 2 2))
 		(setq COORDS
@@ -38,7 +39,7 @@
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
 )
 
-(defun EXIT (/)
+(defun EXIT ()
 (princ (strcat "\nKoniec, wskazano punktow: " (rtos I)) )
 (princ)
 )
@@ -49,11 +50,25 @@
 	(setq d  (* 3 FONT_SIZE))
 	(setq p1 MARK_POINT)
 	(setq p2 (getpoint p1 "Wskaz koniec linii pomocniczej:"))
-	(setq p3 (polar p2 0 d))
+	(if (> (car p1) (car p2) )
+		(progn
+				(princ "lewo")
+				(setq p3 (polar p2 pi d))
+				(setq MARK_POINT (list (+ (car p3)(/ d 10)) (cadr p3)  ))
+		)
+		(progn
+				(princ "prawo")
+				(setq p3 (polar p2 0 d))
+				(setq MARK_POINT (list (- (car p3)(/ d 1.1)) (cadr p3)  ))
+		)
+	)
 	(command "_line" p1 p2 "")
 	(command "_line" p2 p3 "")
-	(setq MARK_POINT (list (-(car p3)(/ d 1.1)) (cadr p3)  ))
 	(DRAW_TEXT)
+)
+
+(defun TEST_FOR_GUIDE (p1 p2 p3 MARK_POINT)
+
 )
 
 (princ (strcat "\nPolecenie: ZUD") ) 
