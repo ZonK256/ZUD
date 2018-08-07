@@ -1,13 +1,20 @@
 (defun c:zud(/ NR FILE_NAME FILE FONT_SIZE LINE old_cmdecho)
 	(setq old_cmdecho (getvar "CMDECHO"))
 	(setvar "CMDECHO" 0)	
-	(initget (+ 8 8 4 4))
-		(setq NR (getint "Podaj numer pierwszego punktu <1>: "))
-		(setq FONT_SIZE (getreal "Podaj rozmiar tekstu <10>:"))
-		(setq LINE (getstring "Podaj oznaczenie lacza <t>:"))
+	(setq NR 1 FONT_SIZE 3 LINE "t")
+	(princ (strcat "Domyslne wartosci dla: pierwszego punktu <" (rtos NR)  ">, rozmiaru tekstu <" (rtos FONT_SIZE) "> i oznaczenia lacza <" LINE ">. "))
+	(setq DEFAULT (getstring "Zachowac domyslne wartosci? <T> [T/N]"))
+		(if (or (= DEFAULT "N") (= DEFAULT "n")) 
+			(progn
+				(initget (+ 8 8 4))
+				(setq NR (getint "Podaj numer pierwszego punktu <1>: "))
+				(setq FONT_SIZE (getreal "Podaj rozmiar tekstu <3>:"))
+				(setq LINE (getstring "Podaj oznaczenie lacza <t>:"))			
+			)
+		)
 	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
 	(if (= NR nil) (setq NR 1))
-	(if (= FONT_SIZE nil) (setq FONT_SIZE 10))
+	(if (= FONT_SIZE nil) (setq FONT_SIZE 3))
 	(if (= LINE "") (setq LINE "t"))	
 	(setq FILE (open FILE_NAME "W"))
 	(setq I 0)
@@ -54,7 +61,7 @@
 		(progn
 				(princ "lewo")
 				(setq p3 (polar p2 pi d))
-				(setq MARK_POINT (list (+ (car p3)(/ d 10)) (cadr p3)  ))
+				(setq MARK_POINT (list (+ (car p3)(/ d 5	)) (cadr p3)  ))
 		)
 		(progn
 				(princ "prawo")
@@ -65,10 +72,6 @@
 	(command "_line" p1 p2 "")
 	(command "_line" p2 p3 "")
 	(DRAW_TEXT)
-)
-
-(defun TEST_FOR_GUIDE (p1 p2 p3 MARK_POINT)
-
 )
 
 (princ (strcat "\nPolecenie: ZUD") ) 
