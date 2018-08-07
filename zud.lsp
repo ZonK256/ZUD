@@ -1,22 +1,22 @@
 (defun c:zud(/ NR FILE_NAME FILE FONT_SIZE LINE old_cmdecho)
 	(setq old_cmdecho (getvar "CMDECHO"))
 	(setvar "CMDECHO" 0)	
-	(setq NR 1 FONT_SIZE 3 LINE "t")
+	(setq NR 1 FONT_SIZE 2 LINE "t")
 	(princ (strcat "Domyslne wartosci dla: pierwszego punktu <" (rtos NR)  ">, rozmiaru tekstu <" (rtos FONT_SIZE) "> i oznaczenia lacza <" LINE ">. "))
 	(setq DEFAULT (getstring "Zachowac domyslne wartosci? <T> [T/N]"))
 		(if (or (= DEFAULT "N") (= DEFAULT "n")) 
 			(progn
 				(initget (+ 8 8 4))
-				(setq NR (getint "Podaj numer pierwszego punktu <1>: "))
-				(setq FONT_SIZE (getreal "Podaj rozmiar tekstu <3>:"))
-				(setq LINE (getstring "Podaj oznaczenie lacza <t>:"))			
+				(setq NR (getint "Podaj numer pierwszego punktu: "))
+				(setq FONT_SIZE (getreal "Podaj rozmiar tekstu:"))
+				(setq LINE (getstring "Podaj oznaczenie lacza:"))			
 			)
 		)
 	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
 	(if (= NR nil) (setq NR 1))
 	(if (= FONT_SIZE nil) (setq FONT_SIZE 3))
 	(if (= LINE "") (setq LINE "t"))	
-	(setq FILE (open FILE_NAME "W"))
+	(setq FILE (open FILE_NAME "A"))
 	(setq I 0)
 	(write-line (strcat "Nr  Y 		X" ) FILE)
 	(while
@@ -39,11 +39,17 @@
 (EXIT)
 )
 
-(defun DRAW_TEXT (/ mark_text)
+(defun DRAW_TEXT (/ mark_text p1 p2)
 	(setq mark_text (strcat (rtos NR) LINE))
 	(command "_layer" "_m" "zud-nr" "_c" "7" "" "")
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
-)
+	(setq a (* FONT_SIZE 2))
+	(setq p1 (list (+ (car MARK_POINT) a) (+ (cadr MARK_POINT) a)) )
+	(princ p1)
+	(setq p2 (list (- (car MARK_POINT) a) (- (cadr MARK_POINT) a)) )
+	(princ p2)
+	(command "_textmask" p1 p2 "")
+)	
 
 (defun EXIT ()
 (princ (strcat "\nKoniec, wskazano punktow: " (rtos I)) )
@@ -51,7 +57,7 @@
 )
 
 (defun DRAW_GUIDE (/ d p1 p2 p3)
-	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
+	(command "_layer" "_m" "zud-linie" "_c" "7" "" "")
 	(setq d  (* 3 FONT_SIZE))
 	(setq p1 MARK_POINT)
 	(setq p2 (getpoint p1 "Wskaz koniec linii pomocniczej:"))
@@ -68,20 +74,30 @@
 	(command "_line" p1 p2 "")
 	(command "_line" p2 p3 "")
 	(DRAW_TEXT)
+	;(command "group" "create" "*" "" g1 g2 "")
 )
 
-(princ (strcat "ZUD") ) 
 
-;(defun DRAW_POINT (/)d ang_90 ang_270 p1 p2 p3 p4)
-;	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
-;	(setq d (/ FONT_SIZE 3))
-;	(setq ang_90 (/ pi 2))
-;	(setq ang_270 (* 3 ang_90))
-;	(setq p1 (polar MARK_POINT ang_90 d))
-;	(setq p2 (polar MARK_POINT ang_270 d))
-;	(setq p3 (polar MARK_POINT 0 d))
-;	(setq p4 (polar MARK_POINT pi d))
-;	(command "_osmode" "0" "")
-;	(command "_line" p1 p2 "")
-;	(command "_line" p3 p4 "")
-;)
+;|
+TODO
+>>>	 text background
+>>>	 file append
+>	 guide grouping
+>		
+
+
+(defun DRAW_POINT (/)d ang_90 ang_270 p1 p2 p3 p4)
+	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
+	(setq d (/ FONT_SIZE 3))
+	(setq ang_90 (/ pi 2))
+	(setq ang_270 (* 3 ang_90))
+	(setq p1 (polar MARK_POINT ang_90 d))
+	(setq p2 (polar MARK_POINT ang_270 d))
+	(setq p3 (polar MARK_POINT 0 d))
+	(setq p4 (polar MARK_POINT pi d))
+	(command "_osmode" "0" "")
+	(command "_line" p1 p2 "")
+	(command "_line" p3 p4 "")
+)
+|;
+(princ (strcat "ZUD") ) 
