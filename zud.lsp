@@ -43,7 +43,8 @@
 	(setq mark_text (strcat (rtos NR 2 0) LINE))
 	(command "_layer" "_m" "zud-nr" "_c" "7" "" "")
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
-	(setq p MARK_POINT)
+	(setq p (list (+ (car MARK_POINT)(/ FONT_SIZE 2)) (+ (cadr MARK_POINT)(/ FONT_SIZE 2)) ))
+	(princ MARK_POINT)
 	(command "_textmask" p "")
 )	
 
@@ -67,10 +68,11 @@
 				(setq MARK_POINT (list (- (car p3)(/ d 1.1)) (cadr p3)  ))
 		)
 	)
+	;(setq 1 (command "_line" p1 p2 ""))
 	(command "_line" p1 p2 "")
 	(command "_line" p2 p3 "")
 	(DRAW_TEXT)
-	;(command "group" "create" "*" "" g1 g2 "")
+	;(command "group" "create" "*" p1 p2 "")
 )
 
 
