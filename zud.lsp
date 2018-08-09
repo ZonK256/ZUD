@@ -89,10 +89,7 @@
 
 ;|
 TODO
->>>	 text background
->>>	 file append
->>>	 guide grouping
->		
+> file modify		
 
 
 (defun DRAW_POINT (/)d ang_90 ang_270 p1 p2 p3 p4)
