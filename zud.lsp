@@ -1,6 +1,6 @@
 (defun c:zud(/ NR FILE_NAME FILE FONT_SIZE LINE old_cmdecho)
-	(setq old_cmdecho (getvar "CMDECHO"))
-	(setvar "CMDECHO" 0)	
+	;(setq old_cmdecho (getvar "CMDECHO"))
+	;(setvar "CMDECHO" 0)	
 	(setq NR 1 FONT_SIZE 1.5 LINE "t")
 	(princ (strcat "Domyslne wartosci dla: pierwszego punktu <" (rtos NR)  ">, rozmiaru tekstu <" (rtos FONT_SIZE) "> i oznaczenia lacza <" LINE ">. "))
 	(setq DEFAULT (getstring "Zachowac domyslne wartosci? <T> [T/N]"))
@@ -35,7 +35,7 @@
 		(setq I (1+ I))
 	)
 	(close FILE)
-	(setvar "CMDECHO" old_cmdecho)
+	;(setvar "CMDECHO" old_cmdecho)
 (EXIT)
 )
 
@@ -43,14 +43,18 @@
 	(setq mark_text (strcat (rtos NR 2 0) LINE))
 	(command "_layer" "_m" "zud-nr" "_c" "7" "" "")
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
+	(ADD_TO_GROUP)
 	(setq p (list (+ (car MARK_POINT)(/ FONT_SIZE 2)) (+ (cadr MARK_POINT)(/ FONT_SIZE 2)) ))
-	(princ MARK_POINT)
 	(command "_textmask" p "")
 )	
 
 (defun EXIT ()
 (princ (strcat "\nKoniec, wskazano punktow: " (rtos I)) )
 (princ)
+)
+
+(defun ADD_TO_GROUP()
+(setq grp (ssadd (entlast) grp))
 )
 
 (defun DRAW_GUIDE (/ d p1 p2 p3)
@@ -68,19 +72,23 @@
 				(setq MARK_POINT (list (- (car p3)(/ d 1.1)) (cadr p3)  ))
 		)
 	)
-	;(setq 1 (command "_line" p1 p2 ""))
-	(command "_line" p1 p2 "")
-	(command "_line" p2 p3 "")
-	(DRAW_TEXT)
-	;(command "group" "create" "*" p1 p2 "")
-)
 
+	(setq grp (ssadd)) 
+	(command "_line" p1 p2 "")
+	(ADD_TO_GROUP)
+	(command "_line" p2 p3 "")
+	(ADD_TO_GROUP)
+	(DRAW_TEXT)
+	(ADD_TO_GROUP)
+	(command "_-group" "" "*" "" grp "")
+
+)
 
 ;|
 TODO
 >>>	 text background
 >>>	 file append
->	 guide grouping
+>>>	 guide grouping
 >		
 
 
