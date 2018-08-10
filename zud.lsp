@@ -15,31 +15,19 @@
 				)			
 			)
 		)
-	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))	
-	(setq FILE (open FILE_NAME "A"))
+	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 33))
 	(setq I 0)
-	(write-line (strcat "Nr  Y 		X" ) FILE)
-	(while
-		(setq MARK_POINT (getpoint (strcat "Wskaz punkt " (rtos NR 2 0)) ))
-		(setq COORD_Y (RTOS (cadr MARK_POINT) 2 2))
-		(setq COORD_X (RTOS (car MARK_POINT) 2 2))
-		(setq COORDS
-			(if (< NR 10) 
-			(strcat (rtos NR 2 0)".  " COORD_Y ",  " COORD_X " 	" LINE )
-			(strcat (rtos NR 2 0) ". " COORD_Y ",  " COORD_X " 	" LINE )
-			)
+	(READ_FILE)
+	(TEST_FILE_BLANK)
+
+		(if (= FILE_BLANK 0)
+			(MODIFY_WRITE_FILE)
+			(BLANK_WRITE_FILE)
 		)
-		(write-line COORDS FILE)
-		(if (or (= GUIDE_CREATE "T") (= GUIDE_CREATE "t"))
-			(DRAW_GUIDE)
-		)
-		(setq NR (1+ NR))
-		(setq I (1+ I))
-	)
-	(close FILE)
 	(setvar "CMDECHO" old_cmdecho)
 (EXIT)
 )
+
 
 (defun DRAW_TEXT (/ mark_text p1 p2)
 	(setq mark_text (strcat (rtos NR 2 0) LINE))
@@ -47,18 +35,9 @@
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
 	(ADD_TO_GROUP)
 	(setq p1 (list (+ (car MARK_POINT)(/ FONT_SIZE 2)) (+ (cadr MARK_POINT)(/ FONT_SIZE 2)) ))
-	(setq p2 (list (+ (car MARK_POINT)(/ FONT_SIZE 3)) (+ (cadr MARK_POINT)(/ FONT_SIZE 3)) ))
-	(command "_textmask" p1 p2 "")
+	;(setq p2 (list (+ (car MARK_POINT)(/ FONT_SIZE 3)) (+ (cadr MARK_POINT)(/ FONT_SIZE 3)) ))
+	(command "_textmask" p1 "")
 )	
-
-(defun EXIT ()
-(princ (strcat "\nKoniec, wskazano punktow: " (rtos I 2 0)) )
-(princ)
-)
-
-(defun ADD_TO_GROUP()
-(setq grp (ssadd (entlast) grp))
-)
 
 (defun DRAW_GUIDE (/ d p1 p2 p3)
 	(command "_layer" "_m" "zud-linie" "_c" "7" "" "")
@@ -75,7 +54,6 @@
 				(setq MARK_POINT (list (- (car p3)(/ d 1.1)) (cadr p3)  ))
 		)
 	)
-
 	(setq grp (ssadd)) 
 	(command "_line" p1 p2 "")
 	(ADD_TO_GROUP)
@@ -84,13 +62,137 @@
 	(DRAW_TEXT)
 	(ADD_TO_GROUP)
 	(command "_-group" "" "*" "" grp "")
+)
 
+(defun READ_FILE ( / a)
+	(princ "\n>>pobieram plik")
+	  (setq labelList(list))
+		(setq FILE (open FILE_NAME "R"))
+	          ;;;--- Read the lines of data in the text file
+	          (while (setq a (read-line FILE))
+	            ;;;--- Add the data to the list
+	            (setq labelList (append labelList (list a)) )
+	          )
+	          ;;;--- Close the file.
+	          (close FILE)
+	   			(setq formList(list))
+	   			(foreach a labelList 
+			   		(setq formList(append formList(list a)))
+	   			)
+)
+
+(defun DO_MARKS ()
+	(princ "\n>>pobieram punkt")
+	(initget 128)
+	(setq MARK_POINT (getpoint (strcat "Wskaz punkt " (rtos NR 2 0)) ))
+	(if (/= MARK_POINT nil)
+		(progn
+			(setq COORD_Y (rtos (cadr MARK_POINT) 2 2))
+			(setq COORD_X (rtos (car MARK_POINT) 2 2))
+			(setq COORDS
+				(if (< NR 10) 
+					(strcat (rtos NR 2 0)".  " COORD_Y ",  " COORD_X " 	" LINE )
+					(strcat (rtos NR 2 0) ". " COORD_Y ",  " COORD_X " 	" LINE )
+				)
+			) 
+		)
+		
+	)
+
+)
+
+
+(defun APPEND_TO_TEMP ( / found)
+	(DO_MARKS)
+	(princ "\n>>koncze pobieranie punktu, przechodze dalej")
+	(if (/= MARK_POINT nil)
+		(progn
+			(princ "\n>>dodaje do listy")
+			(setq NEW_LINE COORDS)
+			(setq test (strcat (rtos NR 2 0)"\.*"))
+			(setq found 0)
+			(foreach n labelList
+				(princ (strcat "\n>>>>>>>test>>>>>>>>" test) )
+				(princ (strcat "\n>>>>>>>testowany>>>" n) )				
+				(if (=	(wcmatch n test) t)
+					(progn
+						(princ "ZNALEZIONO LINIE")
+						(setq n NEW_LINE)
+						(setq found 1)
+					)	
+				)		
+			)
+			(if (= found 0)
+				(progn
+					(princ "NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC")
+					(setq labelList(append labelList (list NEW_LINE)))
+				)
+			)
+		)
+	)
+
+)
+
+(defun BLANK_WRITE_FILE ()
+	(princ "\n>>plik jest pusty")
+	(setq FILE (open FILE_NAME "W"))
+	;(write-line (strcat "Nr  Y 		X" ) FILE)
+	(while
+		(DO_MARKS)
+		(write-line COORDS FILE)
+		(DRAW_GUIDE_OR_NOT)
+		(setq NR (1+ NR))
+		(setq I (1+ I))
+	)
+	(close FILE)
+)
+
+(defun MODIFY_WRITE_FILE ()
+	(princ "\n>>plik NIE jest pusty")
+	(princ labelList)
+	(setq FILE (open FILE_NAME "W"))
+	(while
+		(APPEND_TO_TEMP)
+		(DRAW_GUIDE_OR_NOT)
+		(setq NR (1+ NR))
+		(setq I (1+ I))
+		(princ "\n>>koncze iteracje petli")
+	)
+	(princ "\n>>wychodze z petli")
+	(foreach l labelList (write-line l FILE))
+	(close FILE)
+)
+
+(defun TEST_FILE_BLANK ()
+	(princ "\n>>sprawdzam zawartosc pliku")
+ 	(if (or 
+	 		(= (length labelList) 0) 
+			(= (length labelList) 1)
+		)
+ 		(setq FILE_BLANK 1)
+		(setq FILE_BLANK 0)
+	)
+)		
+
+(defun DRAW_GUIDE_OR_NOT ()
+		(princ "\n>>tworze wskaznik albo nie")
+		(if (or (= GUIDE_CREATE "T") (= GUIDE_CREATE "t"))
+			(DRAW_GUIDE)
+		)
+)
+
+(defun ADD_TO_GROUP()
+	(setq grp (ssadd (entlast) grp))
+)
+
+(defun EXIT ()
+	(princ (strcat "\nKoniec, wskazano punktow: " (rtos I 2 0)) )
+	(princ)
 )
 
 ;|
 TODO
-> file modify		
-
+> file modify
 
 (defun DRAW_POINT (/)d ang_90 ang_270 p1 p2 p3 p4)
 	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
@@ -106,4 +208,5 @@ TODO
 	(command "_line" p3 p4 "")
 )
 |;
-(princ (strcat "ZUD") ) 
+
+(princ (strcat "ZUD")) 
