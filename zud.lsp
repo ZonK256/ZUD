@@ -109,12 +109,12 @@
 		(progn
 			(princ "\n>>dodaje do listy")
 			(setq NEW_LINE COORDS)
-			(setq test (strcat (rtos NR 2 0)"\.*"))
+			(setq test (strcat (rtos NR 2 0)"`.*"  ))
 			(setq found 0)
 			(foreach n labelList
 				(princ (strcat "\n>>>>>>>test>>>>>>>>" test) )
-				(princ (strcat "\n>>>>>>>testowany>>>" n) )				
-				(if (=	(wcmatch n test) t)
+				(princ (strcat "\n>>>>>>>testowany>>>" n) )
+				(if (= (wcmatch n test) t)
 					(progn
 						(princ "ZNALEZIONO LINIE")
 						(setq n NEW_LINE)
