@@ -119,14 +119,15 @@
 (defun READ_FILE ( / a)
 	(princ "\n>>pobieram plik")
 
-	  (setq labelList(list))
+	  (setq labelList(list (strcat "Nr  Y 		X" ) ))
 		(setq FILE (open FILE_NAME "R"))
 			(if (/= (read-line FILE) nil)
 				(progn
 	          		(while (setq a (read-line FILE))
 	           			(setq labelList 
-						(append labelList (list a)) 
+							(append labelList (list a)) 
 						)
+						(print a)
 	          		)
 	          		(close FILE)
 	   				(setq formList (list))
