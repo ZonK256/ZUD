@@ -1,3 +1,5 @@
+;;;TEST;;;
+
 (defun c:zud(/ NR FILE_NAME FILE FONT_SIZE LINE old_cmdecho)
 	(setq old_cmdecho (getvar "CMDECHO"))
 	(setvar "CMDECHO" 0)	
