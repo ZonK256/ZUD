@@ -28,7 +28,8 @@
 				)			
 			)
 		)
-	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 33))
+	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
+	(print FILE_NAME)
 	(setq I 0)
 	(READ_FILE)
 	(TEST_FILE_BLANK)
@@ -117,20 +118,27 @@
 
 (defun READ_FILE ( / a)
 	(princ "\n>>pobieram plik")
+
 	  (setq labelList(list))
 		(setq FILE (open FILE_NAME "R"))
-	          (while (setq a (read-line FILE))
-	            (setq labelList 
-					(append labelList (list a)) 
+			(if (/= (read-line FILE) nil)
+				(progn
+	          		(while (setq a (read-line FILE))
+	           			(setq labelList 
+						(append labelList (list a)) 
+						)
+	          		)
+	          		(close FILE)
+	   				(setq formList (list))
+	   				(foreach a labelList 
+			   			(setq formList 
+					   	(append formList(list a))
+						)
+	   				)				
 				)
-	          )
-	          (close FILE)
-	   			(setq formList (list))
-	   			(foreach a labelList 
-			   		(setq formList 
-					   (append formList(list a))
-					)
-	   			)
+			
+			)
+
 )
 
 (defun DO_MARKS ()
