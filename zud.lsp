@@ -1,4 +1,4 @@
-;;;TEST;;;
+;;;IT MUST BE WORKING;;;
 
 (defun c:zud(/ NR FILE_NAME FILE FONT_SIZE LINE old_cmdecho)
 	(setq old_cmdecho (getvar "CMDECHO"))
@@ -116,7 +116,7 @@
 )
 
 (defun READ_FILE ( / a)
-;	(princ "\n>>pobieram plik")
+	(princ "\n>>pobieram plik")
 	  (setq labelList(list))
 		(setq FILE (open FILE_NAME "R"))
 	          (while (setq a (read-line FILE))
@@ -134,7 +134,7 @@
 )
 
 (defun DO_MARKS ()
-;	(princ "\n>>pobieram punkt")
+	(princ "\n>>pobieram punkt")
 	(initget 128)
 	(setq MARK_POINT 
 		(getpoint 
@@ -162,10 +162,10 @@
 (defun APPEND_TO_TEMP ( / found)
 (while
 	(DO_MARKS)
-;	(princ "\n>>koncze pobieranie punktu, przechodze dalej")
+	(princ "\n>>koncze pobieranie punktu, przechodze dalej")
 	(if (/= MARK_POINT nil)
 		(progn
-;			(princ "\n>>dodaje do listy")
+			(princ "\n>>dodaje do listy")
 			(setq NEW_LINE COORDS)
 			(setq test (strcat (rtos NR 2 0)"`.*"  ))
 			(setq 	found 0
@@ -189,7 +189,7 @@
 			(AFTER_APPEND)
 			(if (= found 0)
 				(progn
-;					(princ "NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC")
+					(princ "NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC")
 					(setq labelList
 						(append labelList (list NEW_LINE))
 					)
@@ -207,15 +207,15 @@
     ( (cons (car l) (Replace (cdr l) (- n 1) w)))))
 
 (defun MODIFY_WRITE_FILE ()
-;	(princ "\n>>plik NIE jest pusty")
+	(princ "\n>>plik NIE jest pusty")
 		(APPEND_TO_TEMP)
-;	(princ "\n>>wychodze z petli")
+	(princ "\n>>wychodze z petli")
 	(setq FILE (open FILE_NAME "W"))
 	(foreach l labelList 
 		(write-line (strcat l) FILE)
-;		(princ  (strcat "\nzapisuje linie "l" do pliku "))
+		(princ  (strcat "\nzapisuje linie "l" do pliku "))
 	)
-;	(princ "\n zamykam plik")
+	(princ "\n zamykam plik")
 	(close FILE)
 )
 
@@ -226,7 +226,7 @@
 )
 
 (defun BLANK_WRITE_FILE ()
-;	(princ "\n>>plik jest pusty")
+	(princ "\n>>plik jest pusty")
 	(setq FILE (open FILE_NAME "W"))
 	(write-line (strcat "Nr  Y 		X" ) FILE)
 	(while
@@ -240,7 +240,7 @@
 )
 
 (defun TEST_FILE_BLANK ()
-;	(princ "\n>>sprawdzam zawartosc pliku")
+	(princ "\n>>sprawdzam zawartosc pliku")
  	(if (or 
 	 		(= (length labelList) 0) 
 			(= (length labelList) 1)
@@ -251,7 +251,7 @@
 )		
 
 (defun DRAW_GUIDE_OR_NOT ()
-;		(princ "\n>>tworze wskaznik albo nie")
+		(princ "\n>>tworze wskaznik albo nie")
 		(if (or (= GUIDE_CREATE "T") (= GUIDE_CREATE "t"))
 			(DRAW_GUIDE)
 		)
