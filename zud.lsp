@@ -177,7 +177,7 @@
 				(if (= (wcmatch element test) t)
 					(progn
 					(princ "ZNALEZIONO LINIE")
-					(setq labelList (Replace labelList iter NEW_LINE))
+					(setq labelList (REPLACE labelList iter NEW_LINE))
 					(foreach n labelList (print n))
 					(setq found 1)
 					)	
@@ -198,20 +198,11 @@
 )
 )
 
-(defun Replace (l n w)
+(defun REPLACE (l n w)
   (cond
     ( (null l) '())
     ( (eq n 0) (cons w (cdr l)))
     ( (cons (car l) (Replace (cdr l) (- n 1) w)))))
-
-(defun MODIFY ( new_item position list_ )
-    (if list_
-            (cons new_item (cdr list_))
-            (cons (car list_) 
-				(MODIFY new_item (1- position) (cdr list_))
-			)
-    )
-)
 
 (defun MODIFY_WRITE_FILE ()
 ;	(princ "\n>>plik NIE jest pusty")
