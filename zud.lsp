@@ -40,12 +40,12 @@
 )
 
 
-(defun DRAW_TEXT (/ mark_text p1 p2)
+(defun DRAW_TEXT (/ mark_text d1 d2)
 	(setq mark_text (strcat (rtos NR 2 0) LINE))
 	(command "_layer" "_m" "zud-nr" "_c" "7" "" "")
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
 	(ADD_TO_GROUP)
-	(setq p1 
+	(setq d1 
 		(list 	
 			(+ 
 				(car MARK_POINT)
@@ -57,19 +57,19 @@
 			) 
 		)
 	)
-	(setq p2 
+	(setq d2 
 		(list 
 			(+ 
-				(car MARK_POINT)
+				(car d1)
 				(/ FONT_SIZE 3)
 			) 
 			(+ 
-				(cadr MARK_POINT)
+				(cadr d1)
 				(/ FONT_SIZE 3)
 			) 
 		)
 	)
-	(command "_textmask" p1 "")
+	(command "_textmask" d1 d1"")
 )	
 
 (defun DRAW_GUIDE (/ d p1 p2 p3)
@@ -114,7 +114,7 @@
 )
 
 (defun READ_FILE ( / a)
-	(princ "\n>>pobieram plik")
+;	(princ "\n>>pobieram plik")
 	  (setq labelList(list))
 		(setq FILE (open FILE_NAME "R"))
 	          (while (setq a (read-line FILE))
@@ -132,7 +132,7 @@
 )
 
 (defun DO_MARKS ()
-	(princ "\n>>pobieram punkt")
+;	(princ "\n>>pobieram punkt")
 	(initget 128)
 	(setq MARK_POINT 
 		(getpoint 
@@ -158,29 +158,36 @@
 
 
 (defun APPEND_TO_TEMP ( / found)
+(while
 	(DO_MARKS)
-	(princ "\n>>koncze pobieranie punktu, przechodze dalej")
+;	(princ "\n>>koncze pobieranie punktu, przechodze dalej")
 	(if (/= MARK_POINT nil)
 		(progn
-			(princ "\n>>dodaje do listy")
+;			(princ "\n>>dodaje do listy")
 			(setq NEW_LINE COORDS)
 			(setq test (strcat (rtos NR 2 0)"`.*"  ))
-			(setq found 0)
-			(foreach n labelList
-				(if (= (wcmatch n test) t)
-					(progn
-						(princ "ZNALEZIONO LINIE")
-						(princ (strcat "\n>>stara linia: " n))
-						(princ (strcat "\n>>nowa linia: " NEW_LINE))
-						(setq n NEW_LINE)
-						(setq found 1)
-						(princ "\n>>wychodze z foreach: ")
-					)	
-				)		
+			(setq 	found 0
+					iter 0
 			)
+
+
+			(setq elements (length labelList))
+			(repeat elements
+				(setq element (nth iter labelList))
+				(if (= (wcmatch element test) t)
+					(progn
+					(princ "ZNALEZIONO LINIE")
+					(setq labelList (Replace labelList iter NEW_LINE))
+					(foreach n labelList (print n))
+					(setq found 1)
+					)	
+				)
+				(setq iter (+ iter 1))		
+			)
+			(AFTER_APPEND)
 			(if (= found 0)
 				(progn
-					(princ "NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC")
+;					(princ "NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC")
 					(setq labelList
 						(append labelList (list NEW_LINE))
 					)
@@ -188,11 +195,45 @@
 			)
 		)
 	)
+)
+)
 
+(defun Replace (l n w)
+  (cond
+    ( (null l) '())
+    ( (eq n 0) (cons w (cdr l)))
+    ( (cons (car l) (Replace (cdr l) (- n 1) w)))))
+
+(defun MODIFY ( new_item position list_ )
+    (if list_
+            (cons new_item (cdr list_))
+            (cons (car list_) 
+				(MODIFY new_item (1- position) (cdr list_))
+			)
+    )
+)
+
+(defun MODIFY_WRITE_FILE ()
+;	(princ "\n>>plik NIE jest pusty")
+		(APPEND_TO_TEMP)
+;	(princ "\n>>wychodze z petli")
+	(setq FILE (open FILE_NAME "W"))
+	(foreach l labelList 
+		(write-line (strcat l) FILE)
+;		(princ  (strcat "\nzapisuje linie "l" do pliku "))
+	)
+;	(princ "\n zamykam plik")
+	(close FILE)
+)
+
+(defun AFTER_APPEND ()
+	(DRAW_GUIDE_OR_NOT)
+	(setq NR (1+ NR))
+	(setq I (1+ I))
 )
 
 (defun BLANK_WRITE_FILE ()
-	(princ "\n>>plik jest pusty")
+;	(princ "\n>>plik jest pusty")
 	(setq FILE (open FILE_NAME "W"))
 	(write-line (strcat "Nr  Y 		X" ) FILE)
 	(while
@@ -205,26 +246,8 @@
 	(close FILE)
 )
 
-(defun MODIFY_WRITE_FILE ()
-	(princ "\n>>plik NIE jest pusty")
-	(princ labelList)
-	(while
-		(APPEND_TO_TEMP)
-		(DRAW_GUIDE_OR_NOT)
-		(setq NR (1+ NR))
-		(setq I (1+ I))
-		(princ "\n>>koncze iteracje petli")
-	)
-	(princ "\n>>wychodze z petli")
-	(setq FILE (open FILE_NAME "W"))
-	(foreach l labelList 
-		(write-line l FILE)
-	)
-	(close FILE)
-)
-
 (defun TEST_FILE_BLANK ()
-	(princ "\n>>sprawdzam zawartosc pliku")
+;	(princ "\n>>sprawdzam zawartosc pliku")
  	(if (or 
 	 		(= (length labelList) 0) 
 			(= (length labelList) 1)
@@ -235,7 +258,7 @@
 )		
 
 (defun DRAW_GUIDE_OR_NOT ()
-		(princ "\n>>tworze wskaznik albo nie")
+;		(princ "\n>>tworze wskaznik albo nie")
 		(if (or (= GUIDE_CREATE "T") (= GUIDE_CREATE "t"))
 			(DRAW_GUIDE)
 		)
@@ -254,7 +277,7 @@
 
 ;|
 TODO
-> file modify
+>>> file modify
 
 (defun DRAW_POINT (/)d ang_90 ang_270 p1 p2 p3 p4)
 	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
