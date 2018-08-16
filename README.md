@@ -1,6 +1,3 @@
-# lisp
-Just some lisp project
-
 ## Features list
 - [X] Reading position coordinates
 - [X] Optional guidelines
