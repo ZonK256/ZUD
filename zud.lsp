@@ -1,47 +1,56 @@
-;;;IT MUST BE WORKING;;;
-
-(defun c:zud(/ NR FILE_NAME FILE FONT_SIZE LINE old_cmdecho)
+(defun c:zud(/ old_cmdecho)
 	(setq old_cmdecho (getvar "CMDECHO"))
 	(setvar "CMDECHO" 0)	
+	(INIT)
+	(READ_FILE)
+	(TEST_FILE_BLANK)
+	(setvar "CMDECHO" old_cmdecho)
+	(EXIT)
+)
+
+;|
+(defun c:miarka ()
+	(initget Plik Projekt)
+	(setq MEASURE (getkword "\n Chcesz zmierzyc odleglosc punktow z pliku, czy projektu (Plik/Projekt): "))
+	(cond
+		(= MEASURE "Plik") (MEASURE_FILE)
+		(= MEASURE "Projekt") (MEASURE_PROJECT)
+	)
+)
+|;
+
+(defun INIT ( / *error*)
+	(defun *error* (msg) (ERROR_INIT msg))
 	(setq 	NR 1
 		 	FONT_SIZE 1.5 
 			LINE "t" 
 			GUIDE_CREATE "T"
+			I 0
 	)
-
 	(princ (strcat "Domyslne wartosci: pierwszy punkt <" (rtos NR)  ">,
 					rozmiar tekstu <" (rtos FONT_SIZE) ">, 
 					oznaczenie lacza <" LINE ">, 
 					tryb Tworzenia Znanczikow (T/N) <" GUIDE_CREATE "> "
 			)
 	)
-
 	(setq DEFAULT (getstring "Zachowac domyslne wartosci? <T> [T/N]"))
 		(if (or (= DEFAULT "N") (= DEFAULT "n")) 
 			(progn
 				(initget (+ 8 8 4))
 				(setq NR (getint "Podaj numer pierwszego punktu: "))
 				(setq LINE (getstring "Podaj oznaczenie lacza:"))
-				(setq GUIDE_CREATE (getstring "Tworzyc znaczniki? [T/N]"))
+				(setq GUIDE_CREATE (getstring "Tworzyc znaczniki? <T> [T/N]"))
 				(if (or (= GUIDE_CREATE "T") (= GUIDE_CREATE "t"))
 					(setq FONT_SIZE (getreal "Podaj rozmiar tekstu:"))
 				)			
 			)
 		)
 	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
-	(print FILE_NAME)
-	(setq I 0)
-	(READ_FILE)
-	(TEST_FILE_BLANK)
 
-		(if (= FILE_BLANK 0)
-			(MODIFY_WRITE_FILE)
-			(BLANK_WRITE_FILE)
-		)
-	(setvar "CMDECHO" old_cmdecho)
-(EXIT)
+	(if (= ERROR_OCCURED 1)
+		(READ_FILE)
+	)
 )
-
 
 (defun DRAW_TEXT (/ mark_text d1 d2)
 	(setq mark_text (strcat (rtos NR 2 0) LINE))
@@ -75,7 +84,8 @@
 	(command "_textmask" d1 d1"")
 )	
 
-(defun DRAW_GUIDE (/ d p1 p2 p3)
+(defun DRAW_GUIDE (/ d p1 p2 p3 *error*)
+	(defun *error* (msg) (ERROR_DRAW_GUIDE msg))
 	(command "_layer" "_m" "zud-linie" "_c" "7" "" "")
 	(setq d  (* 2 FONT_SIZE))
 	(setq p1 MARK_POINT)
@@ -140,9 +150,15 @@
 			
 			)
 
+	(if (= ERROR_OCCURED 1)
+		(TEST_FILE_BLANK)
+	)
+
 )
 
-(defun DO_MARKS ()
+(defun DO_MARKS ( / *error* )
+	(defun *error* (msg) (ERROR_DO_MARKS msg))
+
 	(princ "\n>>pobieram punkt")
 	(initget 128)
 	(setq MARK_POINT 
@@ -167,53 +183,54 @@
 
 )
 
-
 (defun APPEND_TO_TEMP ( / found)
-(while
-	(DO_MARKS)
-	(princ "\n>>koncze pobieranie punktu, przechodze dalej")
-	(if (/= MARK_POINT nil)
-		(progn
-			(princ "\n>>dodaje do listy")
-			(setq NEW_LINE COORDS)
-			(setq test (strcat (rtos NR 2 0)"`.*"  ))
-			(setq 	found 0
-					iter 0
-			)
-
-
-			(setq elements (length labelList))
-			(repeat elements
-				(setq element (nth iter labelList))
-				(if (= (wcmatch element test) t)
-					(progn
-					(princ "ZNALEZIONO LINIE")
-					(setq labelList (REPLACE labelList iter NEW_LINE))
-					(foreach n labelList (print n))
-					(setq found 1)
-					)	
+	(while
+		(DO_MARKS)
+		(princ "\n>>koncze pobieranie punktu, przechodze dalej")
+		(if (/= MARK_POINT nil)
+			(progn
+				(princ "\n>>dodaje do listy")
+				(setq NEW_LINE COORDS)
+				(setq test (strcat (rtos NR 2 0)"`.*"  ))
+				(setq 	found 0
+						iter 0
 				)
-				(setq iter (+ iter 1))		
-			)
-			(AFTER_APPEND)
-			(if (= found 0)
-				(progn
-					(princ "NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC")
-					(setq labelList
-						(append labelList (list NEW_LINE))
+
+
+				(setq elements (length labelList))
+				(repeat elements
+					(setq element (nth iter labelList))
+					(if (= (wcmatch element test) t)
+						(progn
+							(princ "ZNALEZIONO LINIE")
+							(setq labelList (REPLACE labelList iter NEW_LINE))
+							(foreach n labelList (print n))
+							(setq found 1)
+						)	
+					)
+					(setq iter (+ iter 1))		
+				)
+				(AFTER_APPEND)
+				(if (= found 0)
+					(progn
+						(princ "NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC")
+						(setq labelList
+							(append labelList (list NEW_LINE))
+						)
 					)
 				)
 			)
 		)
 	)
 )
-)
 
 (defun REPLACE (l n w)
-  (cond
-    ( (null l) '())
-    ( (eq n 0) (cons w (cdr l)))
-    ( (cons (car l) (Replace (cdr l) (- n 1) w)))))
+  	(cond
+    	( (null l) '())
+    	( (eq n 0) (cons w (cdr l)))
+   	 	( (cons (car l) (Replace (cdr l) (- n 1) w)))
+	)
+)
 
 (defun MODIFY_WRITE_FILE ()
 	(princ "\n>>plik NIE jest pusty")
@@ -254,8 +271,8 @@
 	 		(= (length labelList) 0) 
 			(= (length labelList) 1)
 		)
- 		(setq FILE_BLANK 1)
-		(setq FILE_BLANK 0)
+ 		(BLANK_WRITE_FILE)		;file was blank
+		(MODIFY_WRITE_FILE)		;file was not blank
 	)
 )		
 
@@ -277,23 +294,39 @@
 	(princ)
 )
 
-;|
-TODO
->>> file modify
-
-(defun DRAW_POINT (/)d ang_90 ang_270 p1 p2 p3 p4)
-	(command "_layer" "_m" "zud-pk" "_c" "7" "" "")
-	(setq d (/ FONT_SIZE 3))
-	(setq ang_90 (/ pi 2))
-	(setq ang_270 (* 3 ang_90))
-	(setq p1 (polar MARK_POINT ang_90 d))
-	(setq p2 (polar MARK_POINT ang_270 d))
-	(setq p3 (polar MARK_POINT 0 d))
-	(setq p4 (polar MARK_POINT pi d))
-	(command "_osmode" "0" "")
-	(command "_line" p1 p2 "")
-	(command "_line" p3 p4 "")
+;==[ERROR HANDLING]==;
+(defun ERROR_INIT ( msg / DO_SMTH)
+	(print msg)
+	(setq DO_SMTH (getstring "\n Czy chcesz zakonczyc dzialanie programu? <N> [T/N]"))
+		(if (or (= DO_SMTH "T") (= DO_SMTH "t"))
+			(EXIT)
+			(progn
+				(setq ERROR_OCCURED 1)
+				(INIT)
+			)
+	)
 )
-|;
-
-(princ (strcat "ZUD")) 
+(defun ERROR_DO_MARKS ( msg / DO_SMTH)
+	(print msg)
+	(setq DO_SMTH (getstring "\n Czy chcesz zakonczyc dzialanie programu? <N> [T/N]"))
+		(if (or (= DO_SMTH "T") (= DO_SMTH "t"))
+			(EXIT)
+			(progn
+				(setq ERROR_OCCURED 1)
+				(DO_MARKS)
+			)
+	)
+)
+(defun ERROR_DRAW_GUIDE ( msg / DO_SMTH)
+	(print msg)
+	(setq DO_SMTH (getstring "\n Czy chcesz zakonczyc dzialanie programu? <N> [T/N]"))
+		(if (or (= DO_SMTH "T") (= DO_SMTH "t"))
+			(EXIT)
+			(progn
+				(setq ERROR_OCCURED 1)
+				(DRAW_GUIDE)
+			)
+	)
+)	
+;==[ERROR HANDLING]==;
+(princ (strcat "ZUD"))
