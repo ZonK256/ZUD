@@ -8,17 +8,6 @@
 	(EXIT)
 )
 
-;|
-(defun c:miarka ()
-	(initget Plik Projekt)
-	(setq MEASURE (getkword "\n Chcesz zmierzyc odleglosc punktow z pliku, czy projektu (Plik/Projekt): "))
-	(cond
-		(= MEASURE "Plik") (MEASURE_FILE)
-		(= MEASURE "Projekt") (MEASURE_PROJECT)
-	)
-)
-|;
-
 (defun INIT ( / *error*)
 	(defun *error* (msg) (ERROR_INIT msg))
 	(setq 	NR 1
@@ -329,4 +318,106 @@
 	)
 )	
 ;==[ERROR HANDLING]==;
-(princ (strcat "ZUD"))
+(print (strcat "ZUD"))
+
+
+;===============================;
+
+(defun c:miarka ()
+	(initget "Plik Projekt")
+	(setq MEASURE (getstring "\n Chcesz zmierzyc odleglosc punktow z pliku, czy projektu (Plik/Projekt): "))
+	(if (= MEASURE "Plik") 
+			(MEASURE_FILE) 
+			(MEASURE_PROJECT)
+	)
+	(princ)
+)
+
+(defun MEASURE_FILE ( / p1 p2)
+		(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
+		(READ_FILE)
+		(setq 	
+				TOTAL_DISTANCE 0
+				lenghtList (- (length labelList) 1)
+				n 1
+		)
+		(princ "\n>>rozpoczynam liczenie")
+		(repeat (- lenghtList 1)
+			(setq 
+				p1  (list 
+						(atof																			;string to real
+							(vl-string-subst "" "," (sym2str											;symbol to string & delete comma
+														(cadr											
+															(read 
+																(strcat "(" (nth n labelList) ")")		
+															)
+														)
+													)
+							)
+						) 
+						(caddr
+							(read 
+							(strcat "(" (nth n labelList) ")")
+							)
+						)
+					) 
+ 				p2  (list 
+				 		(atof
+							(vl-string-subst "" "," (sym2str
+														(cadr
+															(read 
+																(strcat "(" (nth (+ n 1) labelList) ")")
+															)
+														)
+													)
+							)
+						) 
+						(caddr 
+							(read 
+								(strcat "(" (nth (+ n 1) labelList) ")")
+							)
+						)
+					) 
+				TOTAL_DISTANCE	(+ TOTAL_DISTANCE (distance p1 p2))
+				n (+ n 1)
+			)
+		)
+		(princ (strcat "\nLaczny dystans = " (rtos TOTAL_DISTANCE)))
+)
+
+(defun MEASURE_PROJECT ( / p1 p2)
+	(setq sumdist 0)
+	(setq p1 (getpoint "\nWybierz pierwszy punkt: "))
+	(while (setq p2 (getpoint p1 "\nWybierz nastepny punkt: "))
+		(prompt
+			(strcat 
+				"\nDystans od ostatniego punktu = " (rtos (distance p1 p2))
+				",\nLaczny dystans = " 	(rtos 	(setq sumdist 
+													(+ 	sumdist 
+														(distance p1 p2)
+													)
+												)
+										)
+			)
+		)
+		(setq p1 p2)
+	)
+	(princ)
+)
+
+(print (strcat "MIARKA"))
+
+(defun sym2str (symbol / f n r)
+	(cond	
+		((setq f (open (setq n (strcat (getvar "tempprefix") "$.$")) "w"))
+			(princ symbol f)
+			(setq f (close f))
+			(cond	
+				( (setq f (open n "r"))
+						(setq r (read-line f))
+						(setq f (close f)) r
+				)
+			)
+		)
+	)
+)
