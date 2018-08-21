@@ -4,6 +4,6 @@
 - [X] Saving coordinates to file
 - [X] Modifying extisting coordinates list
 - [X] Default values
-- [ ] Error handling
-- [ ] Optional distance measuring
+- [X] Error handling (almost)
+- [X] Optional distance measuring
 - [ ] Solving world problems
