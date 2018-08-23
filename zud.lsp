@@ -15,6 +15,7 @@
 			LINE "t" 
 			GUIDE_CREATE "T"
 			I 0
+			PHANTOM_I 0
 	)
 	(princ (strcat "Domyslne wartosci: pierwszy punkt <" (rtos NR)  ">,
 					rozmiar tekstu <" (rtos FONT_SIZE) ">, 
@@ -79,6 +80,7 @@
 	(setq d  (* 2 FONT_SIZE))
 	(setq p1 MARK_POINT)
 	(setq p2 (getpoint p1 "Wskaz koniec linii pomocniczej:"))
+	(print p1)
 	(if (> (car p1) (car p2) )
 		(progn
 				(setq p3 (polar p2 pi d))
@@ -113,6 +115,32 @@
 	(DRAW_TEXT)
 	(ADD_TO_GROUP)
 	(command "_-group" "" "*" "" grp "")
+)
+
+(defun DRAW_PHANTOM_GUIDE ( / d p1 p2 p3 p4 ang_90 ang_270)
+	(if (/= PHANTOM_I 0) (DELETE_TWO_ENTITIES))
+	(princ "\n>>rysuje fantomowy znacznik")
+	(setq ang_90 (/ pi 2))
+	(setq ang_270 (* 3 ang_90))
+	(setq d 0.5)
+	(entmake  (list 	'(0 . "LINE") 
+						'(62 . 3) 
+						(cons 10 (polar MARK_POINT ang_90 d)) 
+						(cons 11 (polar MARK_POINT ang_270 d)) 
+				)
+	)
+	(entmake  (list 	'(0 . "LINE") 
+						'(62 . 3) 
+						(cons 10 (polar MARK_POINT 0 d)) 
+						(cons 11 (polar MARK_POINT pi d))
+				)
+	)
+	(setq PHANTOM_I (+ PHANTOM_I 1))
+)
+
+(defun DELETE_TWO_ENTITIES ()
+	(entdel  (entlast))
+	(entdel  (entlast))
 )
 
 (defun READ_FILE ( / a)
@@ -269,6 +297,7 @@
 		(princ "\n>>tworze wskaznik albo nie")
 		(if (or (= GUIDE_CREATE "T") (= GUIDE_CREATE "t"))
 			(DRAW_GUIDE)
+			(DRAW_PHANTOM_GUIDE)
 		)
 )
 
@@ -277,6 +306,7 @@
 )
 
 (defun EXIT ()
+		(if (/= PHANTOM_I 0) (DELETE_TWO_ENTITIES))
 	(princ 
 		(strcat "\nKoniec, wskazano punktow: " (rtos I 2 0))
 	)
@@ -317,7 +347,7 @@
 			)
 	)
 )	
-;==[ERROR HANDLING]==;
+;==[ERROR HANDLING END]==;
 (print (strcat "ZUD"))
 
 
