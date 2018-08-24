@@ -1,6 +1,6 @@
 (defun c:zud(/ old_cmdecho)
 	(setq old_cmdecho (getvar "CMDECHO"))
-	(setvar "CMDECHO" 0)	
+	(setvar "CMDECHO" 0)
 	(INIT)
 	(READ_FILE)
 	(TEST_FILE_BLANK)
@@ -10,21 +10,21 @@
 
 (defun INIT ( / *error*)
 	(defun *error* (msg) (ERROR_INIT msg))
-	(setq 	NR 1
-		 	FONT_SIZE 1.5 
-			LINE "t" 
-			GUIDE_CREATE "T"
-			I 0
-			PHANTOM_I 0
+	(setq NR 1
+		 		FONT_SIZE 1
+				LINE "t"
+				GUIDE_CREATE "T"
+				I 0
+				PHANTOM_I 0
 	)
 	(princ (strcat "Domyslne wartosci: pierwszy punkt <" (rtos NR)  ">,
-					rozmiar tekstu <" (rtos FONT_SIZE) ">, 
-					oznaczenie lacza <" LINE ">, 
+					rozmiar tekstu <" (rtos FONT_SIZE) ">,
+					oznaczenie lacza <" LINE ">,
 					tryb Tworzenia Znanczikow (T/N) <" GUIDE_CREATE "> "
 			)
 	)
 	(setq DEFAULT (getstring "Zachowac domyslne wartosci? <T> [T/N]"))
-		(if (or (= DEFAULT "N") (= DEFAULT "n")) 
+		(if (or (= DEFAULT "N") (= DEFAULT "n"))
 			(progn
 				(initget (+ 8 8 4))
 				(setq NR (getint "Podaj numer pierwszego punktu: "))
@@ -32,7 +32,7 @@
 				(setq GUIDE_CREATE (getstring "Tworzyc znaczniki? <T> [T/N]"))
 				(if (or (= GUIDE_CREATE "T") (= GUIDE_CREATE "t"))
 					(setq FONT_SIZE (getreal "Podaj rozmiar tekstu:"))
-				)			
+				)
 			)
 		)
 	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
@@ -40,43 +40,44 @@
 	(if (= ERROR_OCCURED 1)
 		(READ_FILE)
 	)
+	(command "_layer" "_m" "zud" "_c" "7" "" "")
 )
 
 (defun DRAW_TEXT (/ mark_text d1 d2)
 	(setq mark_text (strcat (rtos NR 2 0) LINE))
-	(command "_layer" "_m" "zud-nr" "_c" "7" "" "")
 	(command "_text" MARK_POINT FONT_SIZE "0" mark_text)
+
 	(ADD_TO_GROUP)
-	(setq d1 
-		(list 	
-			(+ 
+	(setq d1
+		(list
+			(+
 				(car MARK_POINT)
 				(/ FONT_SIZE 2)
-			) 
-			(+ 
+			)
+			(+
 				(cadr MARK_POINT)
 				(/ FONT_SIZE 2)
-			) 
+			)
 		)
 	)
-	(setq d2 
-		(list 
-			(+ 
+	(setq d2
+		(list
+			(+
 				(car d1)
 				(/ FONT_SIZE 3)
-			) 
-			(+ 
+			)
+			(+
 				(cadr d1)
 				(/ FONT_SIZE 3)
-			) 
+			)
 		)
 	)
-	(command "_textmask" d1 d1"")
-)	
+	(command "_textmask" (entlast) "")
+)
 
 (defun DRAW_GUIDE (/ d p1 p2 p3 *error*)
 	(defun *error* (msg) (ERROR_DRAW_GUIDE msg))
-	(command "_layer" "_m" "zud-linie" "_c" "7" "" "")
+	;(command "_layer" "_m" "zud" "_c" "7" "" "")
 	(setq d  (* 2 FONT_SIZE))
 	(setq p1 MARK_POINT)
 	(setq p2 (getpoint p1 "Wskaz koniec linii pomocniczej:"))
@@ -84,30 +85,30 @@
 	(if (> (car p1) (car p2) )
 		(progn
 				(setq p3 (polar p2 pi d))
-				(setq MARK_POINT 
-							(list 
-								(+ 
+				(setq MARK_POINT
+							(list
+								(+
 									(car p3)
 									(/ d 5)
-								) 
-								(cadr p3)  
+								)
+								(cadr p3)
 							)
 				)
 		)
 		(progn
 				(setq p3 (polar p2 0 d))
-				(setq MARK_POINT 
-							(list 
-								(- 
+				(setq MARK_POINT
+							(list
+								(-
 									(car p3)
 									(/ d 1.1)
-								) 
-								(cadr p3)  
+								)
+								(cadr p3)
 							)
 				)
 		)
 	)
-	(setq grp (ssadd)) 
+	(setq grp (ssadd))
 	(command "_line" p1 p2 "")
 	(ADD_TO_GROUP)
 	(command "_line" p2 p3 "")
@@ -123,15 +124,15 @@
 	(setq ang_90 (/ pi 2))
 	(setq ang_270 (* 3 ang_90))
 	(setq d 0.5)
-	(entmake  (list 	'(0 . "LINE") 
-						'(62 . 3) 
-						(cons 10 (polar MARK_POINT ang_90 d)) 
-						(cons 11 (polar MARK_POINT ang_270 d)) 
+	(entmake  (list 	'(0 . "LINE")
+						'(62 . 3)
+						(cons 10 (polar MARK_POINT ang_90 d))
+						(cons 11 (polar MARK_POINT ang_270 d))
 				)
 	)
-	(entmake  (list 	'(0 . "LINE") 
-						'(62 . 3) 
-						(cons 10 (polar MARK_POINT 0 d)) 
+	(entmake  (list 	'(0 . "LINE")
+						'(62 . 3)
+						(cons 10 (polar MARK_POINT 0 d))
 						(cons 11 (polar MARK_POINT pi d))
 				)
 	)
@@ -151,20 +152,20 @@
 			(if (/= (read-line FILE) nil)
 				(progn
 	          		(while (setq a (read-line FILE))
-	           			(setq labelList 
-							(append labelList (list a)) 
+	           			(setq labelList
+							(append labelList (list a))
 						)
 						(print a)
 	          		)
 	          		(close FILE)
 	   				(setq formList (list))
-	   				(foreach a labelList 
-			   			(setq formList 
+	   				(foreach a labelList
+			   			(setq formList
 					   	(append formList(list a))
 						)
-	   				)				
+	   				)
 				)
-			
+
 			)
 
 	(if (= ERROR_OCCURED 1)
@@ -178,9 +179,9 @@
 
 	(princ "\n>>pobieram punkt")
 	(initget 128)
-	(setq MARK_POINT 
-		(getpoint 
-			(strcat "Wskaz punkt " (rtos NR 2 0)) 
+	(setq MARK_POINT
+		(getpoint
+			(strcat "Wskaz punkt " (rtos NR 2 0))
 		)
 	)
 
@@ -189,13 +190,13 @@
 			(setq COORD_Y (rtos (cadr MARK_POINT) 2 2))
 			(setq COORD_X (rtos (car MARK_POINT) 2 2))
 			(setq COORDS
-				(if (< NR 10) 
+				(if (< NR 10)
 					(strcat (rtos NR 2 0)".  " COORD_Y ",  " COORD_X " 	" LINE )
 					(strcat (rtos NR 2 0) ". " COORD_Y ",  " COORD_X " 	" LINE )
 				)
-			) 
+			)
 		)
-		
+
 	)
 
 )
@@ -223,9 +224,9 @@
 							(setq labelList (REPLACE labelList iter NEW_LINE))
 							(foreach n labelList (print n))
 							(setq found 1)
-						)	
+						)
 					)
-					(setq iter (+ iter 1))		
+					(setq iter (+ iter 1))
 				)
 				(AFTER_APPEND)
 				(if (= found 0)
@@ -254,7 +255,7 @@
 		(APPEND_TO_TEMP)
 	(princ "\n>>wychodze z petli")
 	(setq FILE (open FILE_NAME "W"))
-	(foreach l labelList 
+	(foreach l labelList
 		(write-line (strcat l) FILE)
 		(princ  (strcat "\nzapisuje linie "l" do pliku "))
 	)
@@ -284,14 +285,14 @@
 
 (defun TEST_FILE_BLANK ()
 	(princ "\n>>sprawdzam zawartosc pliku")
- 	(if (or 
-	 		(= (length labelList) 0) 
+ 	(if (or
+	 		(= (length labelList) 0)
 			(= (length labelList) 1)
 		)
  		(BLANK_WRITE_FILE)		;file was blank
 		(MODIFY_WRITE_FILE)		;file was not blank
 	)
-)		
+)
 
 (defun DRAW_GUIDE_OR_NOT ()
 		(princ "\n>>tworze wskaznik albo nie")
@@ -307,7 +308,7 @@
 
 (defun EXIT ()
 		(if (/= PHANTOM_I 0) (DELETE_TWO_ENTITIES))
-	(princ 
+	(princ
 		(strcat "\nKoniec, wskazano punktow: " (rtos I 2 0))
 	)
 	(princ)
@@ -346,7 +347,7 @@
 				(DRAW_GUIDE)
 			)
 	)
-)	
+)
 ;==[ERROR HANDLING END]==;
 (print (strcat "ZUD"))
 
@@ -356,8 +357,8 @@
 (defun c:miarka ()
 	(initget "Plik Projekt")
 	(setq MEASURE (getstring "\n Chcesz zmierzyc odleglosc punktow z pliku, czy projektu (Plik/Projekt): "))
-	(if (= MEASURE "Plik") 
-			(MEASURE_FILE) 
+	(if (= MEASURE "Plik")
+			(MEASURE_FILE)
 			(MEASURE_PROJECT)
 	)
 	(princ)
@@ -366,48 +367,48 @@
 (defun MEASURE_FILE ( / p1 p2)
 		(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
 		(READ_FILE)
-		(setq 	
+		(setq
 				TOTAL_DISTANCE 0
 				lenghtList (- (length labelList) 1)
 				n 1
 		)
 		(princ "\n>>rozpoczynam liczenie")
 		(repeat (- lenghtList 1)
-			(setq 
-				p1  (list 
+			(setq
+				p1  (list
 						(atof																			;string to real
 							(vl-string-subst "" "," (sym2str											;symbol to string & delete comma
-														(cadr											
-															(read 
-																(strcat "(" (nth n labelList) ")")		
+														(cadr
+															(read
+																(strcat "(" (nth n labelList) ")")
 															)
 														)
 													)
 							)
-						) 
+						)
 						(caddr
-							(read 
+							(read
 							(strcat "(" (nth n labelList) ")")
 							)
 						)
-					) 
- 				p2  (list 
+					)
+ 				p2  (list
 				 		(atof
 							(vl-string-subst "" "," (sym2str
 														(cadr
-															(read 
+															(read
 																(strcat "(" (nth (+ n 1) labelList) ")")
 															)
 														)
 													)
 							)
-						) 
-						(caddr 
-							(read 
+						)
+						(caddr
+							(read
 								(strcat "(" (nth (+ n 1) labelList) ")")
 							)
 						)
-					) 
+					)
 				TOTAL_DISTANCE	(+ TOTAL_DISTANCE (distance p1 p2))
 				n (+ n 1)
 			)
@@ -420,10 +421,10 @@
 	(setq p1 (getpoint "\nWybierz pierwszy punkt: "))
 	(while (setq p2 (getpoint p1 "\nWybierz nastepny punkt: "))
 		(prompt
-			(strcat 
+			(strcat
 				"\nDystans od ostatniego punktu = " (rtos (distance p1 p2))
-				",\nLaczny dystans = " 	(rtos 	(setq sumdist 
-													(+ 	sumdist 
+				",\nLaczny dystans = " 	(rtos 	(setq sumdist
+													(+ 	sumdist
 														(distance p1 p2)
 													)
 												)
@@ -438,11 +439,11 @@
 (print (strcat "MIARKA"))
 
 (defun sym2str (symbol / f n r)
-	(cond	
+	(cond
 		((setq f (open (setq n (strcat (getvar "tempprefix") "$.$")) "w"))
 			(princ symbol f)
 			(setq f (close f))
-			(cond	
+			(cond
 				( (setq f (open n "r"))
 						(setq r (read-line f))
 						(setq f (close f)) r
