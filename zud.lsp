@@ -171,7 +171,6 @@
 	(if (= ERROR_OCCURED 1)
 		(TEST_FILE_BLANK)
 	)
-
 )
 
 (defun DO_MARKS ( / *error* )
@@ -198,7 +197,6 @@
 		)
 
 	)
-
 )
 
 (defun APPEND_TO_TEMP ( / found)
@@ -349,14 +347,14 @@
 	)
 )
 ;==[ERROR HANDLING END]==;
-(print (strcat "ZUD"))
+(print "ZUD")
 
 
 ;===============================;
 
 (defun c:miarka ()
 	(initget "Plik Projekt")
-	(setq MEASURE (getstring "\n Chcesz zmierzyc odleglosc punktow z pliku, czy projektu (Plik/Projekt): "))
+	(setq MEASURE (getstring "\nChcesz zmierzyc odleglosc punktow z pliku, czy projektu (Plik/Projekt): "))
 	(if (= MEASURE "Plik")
 			(MEASURE_FILE)
 			(MEASURE_PROJECT)
@@ -436,7 +434,7 @@
 	(princ)
 )
 
-(print (strcat "MIARKA"))
+(print "MIARKA")
 
 (defun sym2str (symbol / f n r)
 	(cond
