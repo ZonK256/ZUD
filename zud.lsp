@@ -1,4 +1,5 @@
 (defun c:zud(/ old_cmdecho)
+	(setq DEBUG_MODE 0)
 	(setq old_cmdecho (getvar "CMDECHO"))
 	(setvar "CMDECHO" 0)
 	(INIT)
@@ -36,7 +37,6 @@
 			)
 		)
 	(setq FILE_NAME (getfiled "Wpisz nazwe pliku" "" "txt;csv;xls" 1))
-
 	(if (= ERROR_OCCURED 1)
 		(READ_FILE)
 	)
@@ -120,7 +120,7 @@
 
 (defun DRAW_PHANTOM_GUIDE ( / d p1 p2 p3 p4 ang_90 ang_270)
 	(if (/= PHANTOM_I 0) (DELETE_TWO_ENTITIES))
-	(princ "\n>>rysuje fantomowy znacznik")
+	(if (= DEBUG_MODE 1) (princ "\n>>rysuje fantomowy znacznik"))
 	(setq ang_90 (/ pi 2))
 	(setq ang_270 (* 3 ang_90))
 	(setq d 0.5)
@@ -145,8 +145,7 @@
 )
 
 (defun READ_FILE ( / a)
-	(princ "\n>>pobieram plik")
-
+		(if (= DEBUG_MODE 1) (princ "\n>>pobieram plik"))
 	  (setq labelList(list (strcat "Nr  Y 		X" ) ))
 		(setq FILE (open FILE_NAME "R"))
 			(if (/= (read-line FILE) nil)
@@ -176,8 +175,7 @@
 
 (defun DO_MARKS ( / *error* )
 	(defun *error* (msg) (ERROR_DO_MARKS msg))
-
-	(princ "\n>>pobieram punkt")
+	(if (= DEBUG_MODE 1) (princ "\n>>pobieram punkt"))
 	(initget 128)
 	(setq MARK_POINT
 		(getpoint
@@ -198,29 +196,26 @@
 		)
 
 	)
-
 )
 
 (defun APPEND_TO_TEMP ( / found)
 	(while
 		(DO_MARKS)
-		(princ "\n>>koncze pobieranie punktu, przechodze dalej")
+		(if (= DEBUG_MODE 1) (princ "\n>>koncze pobieranie punktu, przechodze dalej"))
 		(if (/= MARK_POINT nil)
 			(progn
-				(princ "\n>>dodaje do listy")
+				(if (= DEBUG_MODE 1) (princ "\n>>dodaje do listy"))
 				(setq NEW_LINE COORDS)
 				(setq test (strcat (rtos NR 2 0)"`.*"  ))
 				(setq 	found 0
-						iter 0
+								iter 0
 				)
-
-
 				(setq elements (length labelList))
 				(repeat elements
 					(setq element (nth iter labelList))
 					(if (= (wcmatch element test) t)
 						(progn
-							(princ "ZNALEZIONO LINIE")
+							(if (= DEBUG_MODE 1) (princ "\n>>ZNALEZIONO LINIE"))
 							(setq labelList (REPLACE labelList iter NEW_LINE))
 							(foreach n labelList (print n))
 							(setq found 1)
@@ -231,7 +226,7 @@
 				(AFTER_APPEND)
 				(if (= found 0)
 					(progn
-						(princ "NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC")
+						(if (= DEBUG_MODE 1) (princ "\n>>NIE ZNALEZIONO LINI, DOPISUJE NA KONIEC"))
 						(setq labelList
 							(append labelList (list NEW_LINE))
 						)
@@ -251,13 +246,13 @@
 )
 
 (defun MODIFY_WRITE_FILE ()
-	(princ "\n>>plik NIE jest pusty")
+		(if (= DEBUG_MODE 1) (princ "\n>>plik NIE jest pusty"))
 		(APPEND_TO_TEMP)
-	(princ "\n>>wychodze z petli")
+		(if (= DEBUG_MODE 1) (princ "\n>>wychodze z petli"))
 	(setq FILE (open FILE_NAME "W"))
 	(foreach l labelList
 		(write-line (strcat l) FILE)
-		(princ  (strcat "\nzapisuje linie "l" do pliku "))
+		(if (= DEBUG_MODE 1) (progn (princ (strcat "\nzapisuje linie "l" do pliku "))))
 	)
 	(princ "\n zamykam plik")
 	(close FILE)
@@ -270,7 +265,7 @@
 )
 
 (defun BLANK_WRITE_FILE ()
-	(princ "\n>>plik jest pusty")
+	(if (= DEBUG_MODE 1) (princ "\n>>plik jest pusty"))
 	(setq FILE (open FILE_NAME "W"))
 	(write-line (strcat "Nr  Y 		X" ) FILE)
 	(while
@@ -284,7 +279,7 @@
 )
 
 (defun TEST_FILE_BLANK ()
-	(princ "\n>>sprawdzam zawartosc pliku")
+	(if (= DEBUG_MODE 1) (princ "\n>>sprawdzam zawartosc pliku"))
  	(if (or
 	 		(= (length labelList) 0)
 			(= (length labelList) 1)
@@ -295,7 +290,7 @@
 )
 
 (defun DRAW_GUIDE_OR_NOT ()
-		(princ "\n>>tworze wskaznik albo nie")
+		(if (= DEBUG_MODE 1) (princ "\n>>tworze wskaznik albo nie"))
 		(if (or (= GUIDE_CREATE "T") (= GUIDE_CREATE "t"))
 			(DRAW_GUIDE)
 			(DRAW_PHANTOM_GUIDE)
@@ -349,14 +344,13 @@
 	)
 )
 ;==[ERROR HANDLING END]==;
-(print (strcat "ZUD"))
-
+(print "ZUD")
 
 ;===============================;
 
 (defun c:miarka ()
 	(initget "Plik Projekt")
-	(setq MEASURE (getstring "\n Chcesz zmierzyc odleglosc punktow z pliku, czy projektu (Plik/Projekt): "))
+	(setq MEASURE (getstring "\nChcesz zmierzyc odleglosc punktow z pliku, czy projektu (Plik/Projekt): "))
 	(if (= MEASURE "Plik")
 			(MEASURE_FILE)
 			(MEASURE_PROJECT)
@@ -372,7 +366,7 @@
 				lenghtList (- (length labelList) 1)
 				n 1
 		)
-		(princ "\n>>rozpoczynam liczenie")
+		(if (= DEBUG_MODE 1) (princ "\n>>rozpoczynam liczenie"))
 		(repeat (- lenghtList 1)
 			(setq
 				p1  (list
@@ -436,7 +430,7 @@
 	(princ)
 )
 
-(print (strcat "MIARKA"))
+(print "MIARKA")
 
 (defun sym2str (symbol / f n r)
 	(cond
