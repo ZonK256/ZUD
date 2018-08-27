@@ -170,7 +170,6 @@
 	(if (= ERROR_OCCURED 1)
 		(TEST_FILE_BLANK)
 	)
-
 )
 
 (defun DO_MARKS ( / *error* )
@@ -345,6 +344,10 @@
 )
 ;==[ERROR HANDLING END]==;
 (print "ZUD")
+<<<<<<< HEAD
+=======
+
+>>>>>>> c8410209596e13a2b9f78cd57a449c3ea540d8a7
 
 ;===============================;
 
